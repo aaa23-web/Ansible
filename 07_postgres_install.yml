@@ -1,0 +1,7 @@
+---
+- name: Scenario 7 - Install and configure PostgreSQL (DevSecOps)
+  hosts: db
+  become: true
+
+  roles:
+    - postgres
