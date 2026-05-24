@@ -1,0 +1,7 @@
+---
+- name: Scenario 6 - Configure firewall (UFW)
+  hosts: web
+  become: true
+
+  roles:
+    - firewall
