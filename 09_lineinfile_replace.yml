@@ -1,0 +1,32 @@
+---
+- name: Scenario 9 - Replace strings in index.html using lineinfile
+  hosts: web
+  become: true
+
+  vars:
+    file_path: "{{ nginx_root }}/index.html"
+
+  tasks:
+    # Комментарий: гарантируем, что файл существует
+    - name: Ensure index.html exists
+      ansible.builtin.file:
+        path: "{{ file_path }}"
+        state: touch
+        owner: root
+        group: root
+        mode: "0644"
+
+    # Комментарий: заменяем строку (или добавляем, если нет)
+    - name: Set banner line
+      ansible.builtin.lineinfile:
+        path: "{{ file_path }}"
+        regexp: '^<p id="banner">.*</p>$'
+        line: '<p id="banner">Deploy: {{ ansible_date_time.iso8601 }}</p>'
+        insertafter: '<body>'
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
