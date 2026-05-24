@@ -1,0 +1,21 @@
+---
+- name: Scenario 3 - Update system packages and reboot
+  hosts: all
+  become: true
+
+  tasks:
+    # Комментарий: обновляем список пакетов
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    # Комментарий: обновляем все пакеты
+    - name: Upgrade packages
+      ansible.builtin.apt:
+        upgrade: dist
+
+    # Комментарий: перезагружаем сервер
+    - name: Reboot host
+      ansible.builtin.reboot:
+        reboot_timeout: 600
