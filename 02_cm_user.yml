@@ -1,0 +1,27 @@
+---
+- name: Scenario 2 - Create admin user with sudo rights
+  hosts: all
+  become: true
+
+  vars:
+    new_user: newadmin
+    # вставьте хэш из команды выше:
+    new_user_password_hash: "$6$SALT$HASH..."
+
+  tasks:
+    # Комментарий: создаём пользователя и добавляем в sudo
+    - name: Add the user
+      ansible.builtin.user:
+        name: "{{ new_user }}"
+        groups: sudo
+        append: yes
+        shell: /bin/bash
+        password: "{{ new_user_password_hash }}"
+        state: present
+        create_home: yes
+
+    # Комментарий: запретить passwordless sudo (безопаснее)
+    - name: Ensure user is not passwordless sudo (optional hardening)
+      ansible.builtin.file:
+        path: "/etc/sudoers.d/{{ new_user }}"
+        state: absent
