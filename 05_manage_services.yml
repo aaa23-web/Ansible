@@ -1,0 +1,15 @@
+---
+- name: Scenario 5 - Manage services (start/stop/restart)
+  hosts: web
+  become: true
+
+  vars:
+    target_service: nginx
+    desired_state: restarted  # started | stopped | restarted | reloaded
+
+  tasks:
+    # Комментарий: управляем сервисом параметром desired_state
+    - name: Manage service
+      ansible.builtin.service:
+        name: "{{ target_service }}"
+        state: "{{ desired_state }}"
