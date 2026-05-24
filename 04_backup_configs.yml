@@ -1,0 +1,32 @@
+---
+- name: Scenario 4 - Backup configuration files
+  hosts: all
+  become: true
+
+  vars:
+    backup_dir: "/var/backups/ansible/{{ ansible_date_time.date }}"
+    files_to_backup:
+      - /etc/nginx/nginx.conf
+      - /etc/ssh/sshd_config
+
+  tasks:
+    # Комментарий: создаём директорию под бэкап
+    - name: Create backup directory
+      ansible.builtin.file:
+        path: "{{ backup_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    # Комментарий: копируем файлы, если существуют
+    - name: Backup files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ backup_dir }}/"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0600"
+      loop: "{{ files_to_backup }}"
+      ignore_errors: true
