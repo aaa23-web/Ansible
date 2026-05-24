@@ -1,0 +1,59 @@
+---
+- name: Scenario 8 - Deploy app from Git repository
+  hosts: web
+  become: true
+
+  vars:
+    repo_url: "https://github.com/example/example.git"
+    app_dir: "/opt/myapp"
+    app_branch: "main"
+
+  tasks:
+    # Комментарий: создаём отдельного пользователя под приложение
+    - name: Ensure deploy group exists
+      ansible.builtin.group:
+        name: "{{ deploy_group }}"
+        state: present
+
+    - name: Ensure deploy user exists
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        shell: /bin/bash
+        create_home: yes
+        state: present
+
+    # Комментарий: директория приложения
+    - name: Ensure app directory exists
+      ansible.builtin.file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0755"
+
+    # Комментарий: клонируем репозиторий (идемпотентно)
+    - name: Checkout repository
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: "{{ app_branch }}"
+        force: yes
+      become_user: "{{ deploy_user }}"
+
+    # Комментарий: публикуем статический index.html в nginx root (пример)
+    - name: Copy app index.html to nginx root (if exists)
+      ansible.builtin.copy:
+        src: "{{ app_dir }}/index.html"
+        dest: "{{ nginx_root }}/index.html"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
